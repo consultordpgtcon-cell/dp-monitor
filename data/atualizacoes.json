@@ -1,5 +1,5 @@
 {
-  "ultima_atualizacao": "19/03/2026 06:00",
+  "ultima_atualizacao": "19/03/2026 18:31",
   "total": 3,
   "atualizacoes": [
     {
@@ -18,7 +18,11 @@
         "acao_necessaria": "Contatar fornecedor do sistema de folha e verificar atualização do leiaute.",
         "prazo": "30/04/2026",
         "risco_inacao": "Multa de R$200 por informação incorreta ou entrega em atraso.",
-        "processos_afetados": ["DIRF", "Folha de Pagamento", "Obrigações Acessórias"]
+        "processos_afetados": [
+          "DIRF",
+          "Folha de Pagamento",
+          "Obrigações Acessórias"
+        ]
       }
     },
     {
@@ -37,7 +41,12 @@
         "acao_necessaria": "Atualizar tabela de salários no sistema de folha antes de 01/04/2026.",
         "prazo": "01/04/2026",
         "risco_inacao": "Pagamentos abaixo do mínimo regional geram passivo trabalhista.",
-        "processos_afetados": ["Folha de Pagamento", "FGTS", "INSS", "Admissão"]
+        "processos_afetados": [
+          "Folha de Pagamento",
+          "FGTS",
+          "INSS",
+          "Admissão"
+        ]
       }
     },
     {
@@ -56,7 +65,11 @@
         "acao_necessaria": "Levantar todos os benefícios previdenciários ativos e cadastrar no eSocial.",
         "prazo": "01/07/2026",
         "risco_inacao": "Inconsistências no eSocial bloqueiam emissão de CND previdenciária.",
-        "processos_afetados": ["eSocial", "Benefícios", "Previdência Social"]
+        "processos_afetados": [
+          "eSocial",
+          "Benefícios",
+          "Previdência Social"
+        ]
       }
     }
   ]

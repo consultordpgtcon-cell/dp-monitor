@@ -1,0 +1,19 @@
+2026-03-19 18:31:00,470  INFO      ==================================================
+2026-03-19 18:31:00,470  INFO      MONITOR LEGISLATIVO DP — INÍCIO
+2026-03-19 18:31:00,470  INFO      ==================================================
+2026-03-19 18:31:00,470  INFO      Coletando atualizações...
+2026-03-19 18:31:01,161  INFO      Base atual: 3 itens
+2026-03-19 18:31:01,161  INFO      Coletando: Receita Federal ...
+2026-03-19 18:31:02,160  INFO        0 itens encontrados (antes do filtro)
+2026-03-19 18:31:02,161  INFO        0 itens NOVOS após filtro
+2026-03-19 18:31:04,161  INFO      Coletando: Min. do Trabalho e Emprego ...
+2026-03-19 18:31:04,641  WARNING     Erro ao acessar Min. do Trabalho e Emprego: 404 Client Error: Not Found for url: https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/noticias
+2026-03-19 18:31:04,642  INFO        0 itens NOVOS após filtro
+2026-03-19 18:31:06,642  INFO      Coletando: eSocial ...
+2026-03-19 18:31:07,326  INFO        0 itens encontrados (antes do filtro)
+2026-03-19 18:31:07,327  INFO        0 itens NOVOS após filtro
+2026-03-19 18:31:09,328  INFO      Salvo: 3 itens em data/atualizacoes.json
+2026-03-19 18:31:09,328  INFO        → 0 novos itens coletados
+2026-03-19 18:31:09,328  INFO      ==================================================
+2026-03-19 18:31:09,328  INFO      CONCLUÍDO — 0 itens processados
+2026-03-19 18:31:09,328  INFO      ==================================================
