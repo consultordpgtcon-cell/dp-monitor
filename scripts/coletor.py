@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
-"""
-Monitor Legislativo — Coletor de Atualizações
-"""
-
 import json, hashlib, logging, time
 from datetime import datetime
 from pathlib import Path
-
 import requests
 from bs4 import BeautifulSoup
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
-
 DATA_FILE = Path("data/atualizacoes.json")
 
 PALAVRAS_ALTA = [
@@ -71,7 +65,7 @@ HEADERS = {
 }
 
 
-def calcular_relevancia(texto: str) -> str:
+def calcular_relevancia(texto):
     t = texto.lower()
     if any(p in t for p in PALAVRAS_ALTA):
         return "Alta"
@@ -80,11 +74,11 @@ def calcular_relevancia(texto: str) -> str:
     return "Baixa"
 
 
-def gerar_id(titulo: str, fonte: str) -> str:
+def gerar_id(titulo, fonte):
     return hashlib.md5(f"{fonte}{titulo}".encode()).hexdigest()[:12]
 
 
-def carregar_existentes() -> dict:
+def carregar_existentes():
     if DATA_FILE.exists():
         with open(DATA_FILE, encoding="utf-8") as f:
             items = json.load(f).get("atualizacoes", [])
@@ -92,41 +86,109 @@ def carregar_existentes() -> dict:
     return {}
 
 
-def salvar(atualizacoes: list):
+def salvar(atualizacoes):
     DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M"),
         "total": len(atualizacoes),
-        "atualizacoes": sorted(
-            atualizacoes, key=lambda x: x["data_iso"], reverse=True
-        ),
+        "atualizacoes": sorted(atualizacoes, key=lambda x: x["data_iso"], reverse=True),
     }
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
     log.info(f"Salvo: {len(atualizacoes)} itens")
 
 
-def normalizar_url(href: str, base_url: str) -> str:
-    """Garante que a URL seja absoluta e válida."""
+def normalizar_url(href, base_url):
     if not href:
         return ""
-    href = href.strip()
+    href = href.strip().split("?")[0]  # remove parâmetros desnecessários
     if href.startswith("http://") or href.startswith("https://"):
         return href
     if href.startswith("//"):
         return "https:" + href
     if href.startswith("/"):
         return base_url.rstrip("/") + href
-    return base_url.rstrip("/") + "/" + href
+    return ""
 
 
-def buscar_resumo_na_pagina(url: str) -> str:
-    """Acessa a página da notícia e extrai o primeiro parágrafo."""
+def extrair_links_govbr(soup, base_url, url_listagem):
+    """Extrai links específicos do portal gov.br (sistema Plone)."""
+    resultados = []
+
+    # Seletores específicos do Plone/gov.br
+    seletores = [
+        "h2.tileHeadline a",
+        "h2 a",
+        "h3 a",
+        ".tileHeadline a",
+        "article h2 a",
+        "article h3 a",
+        ".summary a",
+        ".item-title a",
+        "a.summary",
+    ]
+
+    links_encontrados = set()
+    for seletor in seletores:
+        for link in soup.select(seletor):
+            href = link.get("href", "")
+            titulo = link.get_text(strip=True)
+            url = normalizar_url(href, base_url)
+
+            # Valida: URL deve ser diferente da listagem e ter título longo
+            if (url and url != url_listagem and len(titulo) > 15
+                    and url not in links_encontrados
+                    and base_url in url):
+                links_encontrados.add(url)
+                # Tenta pegar resumo do elemento pai
+                pai = link.find_parent(["article", "div", "li"])
+                resumo = ""
+                if pai:
+                    desc = pai.select_one(".description, .tileBody, p")
+                    if desc:
+                        t = desc.get_text(strip=True)
+                        if len(t) > 40 and t != titulo:
+                            resumo = t[:300]
+                resultados.append({
+                    "titulo": titulo,
+                    "url": url,
+                    "resumo": resumo,
+                    "data_str": "",
+                })
+
+    return resultados[:15]
+
+
+def extrair_links_tst(soup, base_url, url_listagem):
+    """Extrai links específicos do TST."""
+    resultados = []
+    links_encontrados = set()
+
+    for link in soup.select("a[href]"):
+        href = link.get("href", "")
+        titulo = link.get_text(strip=True)
+        url = normalizar_url(href, base_url)
+
+        if (url and url != url_listagem and len(titulo) > 20
+                and url not in links_encontrados
+                and ("noticias" in url or "noticia" in url or "web/guest" in url)
+                and url != url_listagem):
+            links_encontrados.add(url)
+            resultados.append({
+                "titulo": titulo,
+                "url": url,
+                "resumo": "",
+                "data_str": "",
+            })
+
+    return resultados[:15]
+
+
+def buscar_resumo_na_pagina(url):
     try:
         r = requests.get(url, headers=HEADERS, timeout=10)
         r.raise_for_status()
         soup = BeautifulSoup(r.text, "html.parser")
-
         for seletor in [
             ".field--name-body p",
             ".noticia-texto p",
@@ -134,7 +196,6 @@ def buscar_resumo_na_pagina(url: str) -> str:
             ".documentDescription",
             ".description",
             "article p",
-            ".texto p",
             "main p",
         ]:
             el = soup.select_one(seletor)
@@ -142,18 +203,16 @@ def buscar_resumo_na_pagina(url: str) -> str:
                 texto = el.get_text(strip=True)
                 if len(texto) > 40:
                     return texto[:300] + ("..." if len(texto) > 300 else "")
-
         for p in soup.find_all("p"):
             texto = p.get_text(strip=True)
             if len(texto) > 60:
                 return texto[:300] + ("..." if len(texto) > 300 else "")
-
     except Exception as e:
-        log.debug(f"Não foi possível buscar resumo em {url}: {e}")
+        log.debug(f"Resumo não obtido de {url}: {e}")
     return ""
 
 
-def coletar_fonte(fonte: dict) -> list:
+def coletar_fonte(fonte):
     log.info(f"Coletando: {fonte['nome']} ...")
     try:
         r = requests.get(fonte["url"], headers=HEADERS, timeout=15)
@@ -163,52 +222,17 @@ def coletar_fonte(fonte: dict) -> list:
         return []
 
     soup = BeautifulSoup(r.text, "html.parser")
-    itens = []
 
-    # Coleta todos os links com título relevante
-    for el in soup.select("article, .item, .noticia, li.item, .tileItem, .summary")[:20]:
-        link = el.select_one("a[href]")
-        if not link:
-            continue
-
-        titulo = link.get_text(strip=True)
-        if len(titulo) < 15:
-            continue
-
-        # URL ESPECÍFICA da notícia — normalizada
-        href = link.get("href", "")
-        url_noticia = normalizar_url(href, fonte["base_url"])
-
-        if not url_noticia or url_noticia == fonte["url"]:
-            continue
-
-        # Tenta pegar resumo direto na listagem
-        resumo = ""
-        for sel in [".description", ".tileBody p", ".resumo", ".summary p", "p"]:
-            rel = el.select_one(sel)
-            if rel:
-                texto = rel.get_text(strip=True)
-                if len(texto) > 40 and texto != titulo:
-                    resumo = texto[:300]
-                    break
-
-        data_el = el.select_one(
-            "span.documentPublicationDate, time, .data, .date, .published"
-        )
-        data_str = data_el.get_text(strip=True) if data_el else ""
-
-        itens.append({
-            "titulo": titulo,
-            "url": url_noticia,       # ← URL específica da notícia
-            "data_str": data_str,
-            "resumo_listagem": resumo,
-        })
+    if fonte["sigla"] == "TST":
+        itens = extrair_links_tst(soup, fonte["base_url"], fonte["url"])
+    else:
+        itens = extrair_links_govbr(soup, fonte["base_url"], fonte["url"])
 
     log.info(f"  {len(itens)} itens encontrados")
     return itens
 
 
-def filtrar_e_enriquecer(itens: list, fonte: dict, existentes: dict) -> list:
+def filtrar_e_enriquecer(itens, fonte, existentes):
     novos = []
     for item in itens:
         relevancia = calcular_relevancia(item["titulo"])
@@ -219,7 +243,7 @@ def filtrar_e_enriquecer(itens: list, fonte: dict, existentes: dict) -> list:
         if uid in existentes:
             continue
 
-        resumo = item.get("resumo_listagem", "")
+        resumo = item.get("resumo", "")
         if not resumo and relevancia == "Alta":
             log.info(f"  Buscando resumo: {item['titulo'][:50]}...")
             resumo = buscar_resumo_na_pagina(item["url"])
@@ -231,8 +255,8 @@ def filtrar_e_enriquecer(itens: list, fonte: dict, existentes: dict) -> list:
             "sigla": fonte["sigla"],
             "titulo": item["titulo"],
             "resumo": resumo,
-            "url": item["url"],           # ← URL específica salva corretamente
-            "data_str": item["data_str"] or datetime.now().strftime("%d/%m/%Y"),
+            "url": item["url"],
+            "data_str": item.get("data_str") or datetime.now().strftime("%d/%m/%Y"),
             "data_iso": datetime.now().strftime("%Y-%m-%d"),
             "relevancia": relevancia,
             "lida": False,
