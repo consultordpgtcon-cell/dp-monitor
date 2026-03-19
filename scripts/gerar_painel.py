@@ -29,180 +29,81 @@ def gerar():
   <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
-
     :root {{
-      --bg:       #F8FAFC;
-      --surface:  #FFFFFF;
-      --border:   #E2E8F0;
-      --text:     #0F172A;
-      --muted:    #64748B;
-      --accent:   #1E3A5F;
-      --accent-l: #EFF6FF;
-      --red:      #DC2626;
-      --red-l:    #FEF2F2;
-      --amber:    #D97706;
-      --amber-l:  #FFFBEB;
-      --green:    #16A34A;
-      --green-l:  #F0FDF4;
-      --radius:   10px;
+      --bg: #F8FAFC; --surface: #FFFFFF; --border: #E2E8F0;
+      --text: #0F172A; --muted: #64748B; --accent: #1E3A5F;
+      --red: #DC2626; --red-l: #FEF2F2;
+      --amber: #D97706; --amber-l: #FFFBEB;
+      --green: #16A34A; --green-l: #F0FDF4;
+      --blue: #1D4ED8; --blue-l: #EFF6FF;
+      --purple: #7C3AED; --purple-l: #F5F3FF;
+      --radius: 10px;
     }}
-
-    body {{
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg); color: var(--text);
-      font-size: 14px; line-height: 1.6;
-    }}
-
-    /* ── Header ── */
-    header {{
-      background: var(--accent); color: #fff;
-      padding: 18px 24px; display: flex;
-      align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 10px;
-    }}
+    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }}
+    header {{ background: var(--accent); color: #fff; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }}
     header h1 {{ font-size: 18px; font-weight: 600; }}
     header p  {{ font-size: 12px; opacity: .75; margin-top: 2px; }}
-    .live-badge {{
-      background: rgba(255,255,255,.15); border-radius: 99px;
-      padding: 4px 12px; font-size: 12px; font-weight: 600;
-      display: flex; align-items: center; gap: 5px;
-    }}
-    .live-dot {{
-      width: 7px; height: 7px; background: #4ADE80;
-      border-radius: 50%; animation: blink 2s ease-in-out infinite;
-    }}
+    .live-badge {{ background: rgba(255,255,255,.15); border-radius: 99px; padding: 4px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 5px; }}
+    .live-dot {{ width: 7px; height: 7px; background: #4ADE80; border-radius: 50%; animation: blink 2s ease-in-out infinite; }}
     @keyframes blink {{ 0%,100%{{opacity:1}} 50%{{opacity:.3}} }}
-
-    /* ── Layout ── */
     .container {{ max-width: 960px; margin: 0 auto; padding: 20px 16px; }}
-
-    /* ── Metrics ── */
-    .metrics {{
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px; margin-bottom: 20px;
-    }}
-    .metric {{
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 14px 16px;
-    }}
+    .metrics {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }}
+    .metric {{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }}
     .metric-label {{ font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }}
     .metric-value {{ font-size: 26px; font-weight: 600; }}
     .metric-sub   {{ font-size: 11px; color: var(--muted); margin-top: 2px; }}
     .metric.danger .metric-value {{ color: var(--red); }}
-
-    /* ── Toolbar ── */
-    .toolbar {{
-      display: flex; gap: 8px; flex-wrap: wrap;
-      align-items: center; margin-bottom: 16px;
-    }}
-    .toolbar select, .toolbar input {{
-      border: 1px solid var(--border); border-radius: 6px;
-      padding: 7px 10px; font-size: 13px;
-      background: var(--surface); color: var(--text);
-    }}
+    .toolbar {{ display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }}
+    .toolbar select, .toolbar input {{ border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; font-size: 13px; background: var(--surface); color: var(--text); }}
     .toolbar input {{ flex: 1; min-width: 200px; }}
-    .btn {{
-      border: 1px solid var(--border); border-radius: 6px;
-      padding: 7px 14px; font-size: 13px; cursor: pointer;
-      background: var(--surface); color: var(--text);
-      white-space: nowrap;
-    }}
+    .btn {{ border: 1px solid var(--border); border-radius: 6px; padding: 7px 14px; font-size: 13px; cursor: pointer; background: var(--surface); color: var(--text); white-space: nowrap; }}
     .btn:hover {{ background: var(--bg); }}
     .btn-primary {{ background: var(--accent); color: #fff; border-color: transparent; }}
     .btn-primary:hover {{ opacity: .88; }}
     .btn-success {{ background: var(--green); color: #fff; border-color: transparent; }}
-    .btn-success:hover {{ opacity: .88; }}
-
-    /* ── Cards ── */
     .items {{ display: flex; flex-direction: column; gap: 10px; }}
-    .item {{
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 16px 18px;
-      transition: border-color .15s;
-    }}
+    .item {{ background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; transition: border-color .15s; }}
     .item:hover {{ border-color: #94A3B8; }}
     .item.unread {{ border-left: 3px solid var(--accent); }}
-
-    .item-header {{ display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }}
+    .item-header {{ display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 6px; }}
     .item-title  {{ font-size: 14px; font-weight: 600; line-height: 1.4; flex: 1; }}
     .item-title a {{ color: var(--accent); text-decoration: none; }}
     .item-title a:hover {{ text-decoration: underline; }}
-    .item-meta   {{ font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }}
-
-    /* badges */
+    .item-meta   {{ font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; align-items: center; }}
+    .item-resumo {{ font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; padding: 10px 12px; background: var(--bg); border-radius: 6px; border-left: 3px solid var(--border); }}
     .badge {{ font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 99px; white-space: nowrap; }}
-    .badge-alta   {{ background: var(--red-l);   color: var(--red);   }}
-    .badge-media  {{ background: var(--amber-l); color: var(--amber); }}
-    .badge-baixa  {{ background: #F1F5F9;        color: var(--muted); }}
-    .badge-rf     {{ background: #EFF6FF; color: #1D4ED8; }}
-    .badge-mte    {{ background: var(--green-l); color: var(--green); }}
-    .badge-es     {{ background: #FFF7ED; color: #C2410C; }}
-    .badge-dou    {{ background: #F5F3FF; color: #5B21B6; }}
-
-    /* análise IA */
-    .ai-box {{
-      background: var(--green-l); border-left: 3px solid var(--green);
-      border-radius: 0 6px 6px 0; padding: 10px 14px; margin-top: 10px;
-      font-size: 13px; color: #166534; line-height: 1.6;
-    }}
-    .ai-label {{
-      font-size: 10px; font-weight: 700; letter-spacing: .06em;
-      text-transform: uppercase; color: var(--green); margin-bottom: 5px;
-    }}
-    .ai-grid {{
-      display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px;
-    }}
+    .badge-alta   {{ background: var(--red-l);    color: var(--red);    }}
+    .badge-media  {{ background: var(--amber-l);  color: var(--amber);  }}
+    .badge-baixa  {{ background: #F1F5F9;         color: var(--muted);  }}
+    .badge-RF     {{ background: var(--blue-l);   color: var(--blue);   }}
+    .badge-MTE    {{ background: var(--green-l);  color: var(--green);  }}
+    .badge-ES     {{ background: #FFF7ED;         color: #C2410C;       }}
+    .badge-TST    {{ background: var(--purple-l); color: var(--purple); }}
+    .badge-PES    {{ background: #FFF7ED;         color: #9A3412;       }}
+    .ai-box {{ background: var(--green-l); border-left: 3px solid var(--green); border-radius: 0 6px 6px 0; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: #166534; line-height: 1.6; }}
+    .ai-label {{ font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--green); margin-bottom: 5px; }}
+    .ai-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; }}
     .ai-row {{ font-size: 12px; }}
     .ai-key  {{ font-weight: 600; }}
-
-    /* processos */
     .tags {{ display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }}
-    .tag {{
-      font-size: 11px; background: #F1F5F9; color: #334155;
-      padding: 2px 8px; border-radius: 4px;
-    }}
-
-    /* ações */
+    .tag  {{ font-size: 11px; background: #F1F5F9; color: #334155; padding: 2px 8px; border-radius: 4px; }}
     .item-actions {{ display: flex; gap: 7px; margin-top: 12px; flex-wrap: wrap; }}
-
-    /* loading */
     .spinner {{ display: inline-block; width: 14px; height: 14px; border: 2px solid #ccc; border-top-color: var(--green); border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }}
     @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
-
-    /* modal */
-    .modal-bg {{
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.45); z-index: 100;
-      align-items: center; justify-content: center;
-    }}
+    .modal-bg {{ display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 100; align-items: center; justify-content: center; }}
     .modal-bg.open {{ display: flex; }}
-    .modal {{
-      background: var(--surface); border-radius: 12px;
-      padding: 24px; max-width: 600px; width: 90%;
-      max-height: 85vh; overflow-y: auto;
-    }}
+    .modal {{ background: var(--surface); border-radius: 12px; padding: 24px; max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; }}
     .modal h2 {{ font-size: 16px; margin-bottom: 16px; }}
-    .modal-close {{
-      float: right; background: none; border: none;
-      font-size: 20px; cursor: pointer; color: var(--muted);
-    }}
-
+    .modal-close {{ float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted); }}
     .empty {{ text-align: center; padding: 48px 16px; color: var(--muted); }}
-
-    footer {{
-      text-align: center; padding: 32px 16px;
-      font-size: 11px; color: var(--muted);
-      border-top: 1px solid var(--border); margin-top: 32px;
-    }}
+    footer {{ text-align: center; padding: 32px 16px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 32px; }}
   </style>
 </head>
 <body>
-
 <header>
   <div>
     <h1>Monitor Legislativo — DP</h1>
-    <p>Receita Federal · Ministério do Trabalho · eSocial · Diário Oficial</p>
+    <p>Receita Federal · Ministério do Trabalho · eSocial · TST · Portal eSocial</p>
   </div>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <span class="live-badge"><span class="live-dot"></span> Automático</span>
@@ -210,20 +111,17 @@ def gerar():
     <button class="btn btn-primary" onclick="exportarPDF()">Exportar PDF</button>
   </div>
 </header>
-
 <div class="container">
-
-  <!-- Métricas -->
   <div class="metrics" id="metrics"></div>
-
-  <!-- Toolbar -->
   <div class="toolbar">
-    <input type="text"   id="busca"          placeholder="Buscar por palavra-chave..." oninput="renderizar()">
-    <select id="filtroFonte"      onchange="renderizar()">
+    <input type="text" id="busca" placeholder="Buscar por palavra-chave..." oninput="renderizar()">
+    <select id="filtroFonte" onchange="renderizar()">
       <option value="">Todas as fontes</option>
       <option>Receita Federal</option>
       <option>Min. do Trabalho e Emprego</option>
       <option>eSocial</option>
+      <option>TST</option>
+      <option>Portal eSocial</option>
     </select>
     <select id="filtroRelevancia" onchange="renderizar()">
       <option value="">Toda relevância</option>
@@ -231,18 +129,15 @@ def gerar():
       <option>Média</option>
       <option>Baixa</option>
     </select>
-    <select id="filtroLeitura"    onchange="renderizar()">
+    <select id="filtroLeitura" onchange="renderizar()">
       <option value="">Todas</option>
       <option value="nao">Não lidas</option>
       <option value="sim">Lidas</option>
     </select>
     <button class="btn" onclick="marcarTodasLidas()">Marcar todas lidas</button>
   </div>
-
   <div class="items" id="lista"></div>
 </div>
-
-<!-- Modal PDF -->
 <div class="modal-bg" id="modalPDF">
   <div class="modal">
     <button class="modal-close" onclick="fecharModal()">×</button>
@@ -254,186 +149,82 @@ def gerar():
     </div>
   </div>
 </div>
-
 <footer>
-  Última coleta: <strong id="ultima"></strong> ·
-  Gerado automaticamente via GitHub Actions ·
-  <a href="https://github.com" style="color:var(--muted)">Ver repositório</a>
+  Última coleta: <strong id="ultima"></strong> · Gerado automaticamente via GitHub Actions
 </footer>
-
 <script>
 const DADOS = {itens_json};
 let itens = JSON.parse(JSON.stringify(DADOS));
-
-// Leitura persistida no localStorage
 const LIDAS_KEY = "dp_monitor_lidas";
 function getLidas() {{ return new Set(JSON.parse(localStorage.getItem(LIDAS_KEY)||"[]")); }}
 function saveLidas(s) {{ localStorage.setItem(LIDAS_KEY, JSON.stringify([...s])); }}
-
-function marcarLida(id) {{
-  const s = getLidas(); s.add(id); saveLidas(s); renderizar();
-}}
-function marcarTodasLidas() {{
-  const s = getLidas();
-  itens.forEach(i => s.add(i.id));
-  saveLidas(s); renderizar();
-}}
-
-function siglaParaBadge(sigla) {{
-  return {{RF:"badge-rf", MTE:"badge-mte", ES:"badge-es", DOU:"badge-dou"}}[sigla] || "badge-rf";
-}}
-function relBadge(r) {{
-  return {{Alta:"badge-alta", Média:"badge-media", Baixa:"badge-baixa"}}[r] || "badge-baixa";
-}}
-
+function marcarLida(id) {{ const s=getLidas(); s.add(id); saveLidas(s); renderizar(); }}
+function marcarTodasLidas() {{ const s=getLidas(); itens.forEach(i=>s.add(i.id)); saveLidas(s); renderizar(); }}
+function relBadge(r) {{ return {{Alta:"badge-alta","Média":"badge-media",Baixa:"badge-baixa"}}[r]||"badge-baixa"; }}
+function siglaBadge(s) {{ return "badge-"+(s||"RF"); }}
 function filtrar() {{
-  const busca = document.getElementById("busca").value.toLowerCase();
-  const fonte  = document.getElementById("filtroFonte").value;
-  const rel    = document.getElementById("filtroRelevancia").value;
-  const leit   = document.getElementById("filtroLeitura").value;
-  const lidas  = getLidas();
-  return itens.filter(i => {{
-    if (busca && !i.titulo.toLowerCase().includes(busca)) return false;
-    if (fonte && i.fonte !== fonte) return false;
-    if (rel   && i.relevancia !== rel) return false;
-    if (leit === "nao" &&  lidas.has(i.id)) return false;
-    if (leit === "sim" && !lidas.has(i.id)) return false;
+  const busca=document.getElementById("busca").value.toLowerCase();
+  const fonte=document.getElementById("filtroFonte").value;
+  const rel=document.getElementById("filtroRelevancia").value;
+  const leit=document.getElementById("filtroLeitura").value;
+  const lidas=getLidas();
+  return itens.filter(i=>{{
+    if(busca&&!i.titulo.toLowerCase().includes(busca)&&!(i.resumo||"").toLowerCase().includes(busca))return false;
+    if(fonte&&i.fonte!==fonte)return false;
+    if(rel&&i.relevancia!==rel)return false;
+    if(leit==="nao"&&lidas.has(i.id))return false;
+    if(leit==="sim"&&!lidas.has(i.id))return false;
     return true;
   }});
 }}
-
 function cardHTML(item) {{
-  const lidas = getLidas();
-  const lida = lidas.has(item.id);
-  let aiHTML = "";
-  if (item.analise_ia) {{
-    const a = item.analise_ia;
-    const procs = (a.processos_afetados||[]).map(p=>`<span class="tag">${{p}}</span>`).join("");
-    aiHTML = `<div class="ai-box">
-      <div class="ai-label">Análise IA</div>
-      <div class="ai-grid">
-        <div class="ai-row"><span class="ai-key">Impacto DP:</span> ${{a.impacto_dp||"—"}}</div>
-        <div class="ai-row"><span class="ai-key">Ação necessária:</span> ${{a.acao_necessaria||"—"}}</div>
-        <div class="ai-row"><span class="ai-key">Prazo:</span> ${{a.prazo||"Não especificado"}}</div>
-        <div class="ai-row"><span class="ai-key">Risco se inativo:</span> ${{a.risco_inacao||"—"}}</div>
-      </div>
-      ${{procs ? `<div class="tags">${{procs}}</div>` : ""}}
-    </div>`;
+  const lida=getLidas().has(item.id);
+  const resumoHTML=item.resumo?`<div class="item-resumo">${{item.resumo}}</div>`:"";
+  let aiHTML="";
+  if(item.analise_ia){{
+    const a=item.analise_ia;
+    const procs=(a.processos_afetados||[]).map(p=>`<span class="tag">${{p}}</span>`).join("");
+    aiHTML=`<div class="ai-box"><div class="ai-label">Análise IA</div><div class="ai-grid"><div class="ai-row"><span class="ai-key">Impacto DP:</span> ${{a.impacto_dp||"—"}}</div><div class="ai-row"><span class="ai-key">Ação necessária:</span> ${{a.acao_necessaria||"—"}}</div><div class="ai-row"><span class="ai-key">Prazo:</span> ${{a.prazo||"Não especificado"}}</div><div class="ai-row"><span class="ai-key">Risco se inativo:</span> ${{a.risco_inacao||"—"}}</div></div>${{procs?`<div class="tags">${{procs}}</div>`:""}}</div>`;
   }}
   return `<div class="item ${{lida?"":"unread"}}" id="card-${{item.id}}">
-    <div class="item-header">
-      <div class="item-title"><a href="${{item.url}}" target="_blank">${{item.titulo}}</a></div>
-      <span class="badge ${{relBadge(item.relevancia)}}">${{item.relevancia}}</span>
-    </div>
-    <div class="item-meta">
-      <span class="badge ${{siglaParaBadge(item.sigla)}}">${{item.fonte}}</span>
-      <span>${{item.data_str}}</span>
-      ${{lida ? '<span style="color:#16A34A">✓ lida</span>' : '<span style="color:#D97706">● nova</span>'}}
-    </div>
-    ${{aiHTML}}
-    <div class="item-actions">
-      ${{!item.analise_ia ? `<button class="btn btn-primary" onclick="analisarIA('${{item.id}}')">Analisar com IA</button>` : ""}}
-      ${{!lida ? `<button class="btn" onclick="marcarLida('${{item.id}}')">Marcar como lida</button>` : ""}}
-      <a href="${{item.url}}" target="_blank" class="btn">Ver fonte</a>
-    </div>
+    <div class="item-header"><div class="item-title"><a href="${{item.url}}" target="_blank">${{item.titulo}}</a></div><span class="badge ${{relBadge(item.relevancia)}}">${{item.relevancia}}</span></div>
+    <div class="item-meta"><span class="badge ${{siglaBadge(item.sigla)}}">${{item.fonte}}</span><span>${{item.data_str}}</span>${{lida?'<span style="color:#16A34A;font-size:12px">✓ lida</span>':'<span style="color:#D97706;font-size:12px">● nova</span>'}}</div>
+    ${{resumoHTML}}${{aiHTML}}
+    <div class="item-actions">${{!item.analise_ia?`<button class="btn btn-primary" onclick="analisarIA('${{item.id}}')">Analisar com IA</button>`:""}}&nbsp;${{!lida?`<button class="btn" onclick="marcarLida('${{item.id}}')">Marcar como lida</button>`:""}} <a href="${{item.url}}" target="_blank" class="btn">Ver fonte</a></div>
   </div>`;
 }}
-
 function renderizar() {{
-  const lista = filtrar();
-  const lidas = getLidas();
-  const naoLidas = itens.filter(i => !lidas.has(i.id)).length;
-  const altas = itens.filter(i => i.relevancia === "Alta").length;
-
-  document.getElementById("metrics").innerHTML = `
-    <div class="metric"><div class="metric-label">Total</div><div class="metric-value">${{itens.length}}</div><div class="metric-sub">no histórico</div></div>
-    <div class="metric danger"><div class="metric-label">Não lidas</div><div class="metric-value">${{naoLidas}}</div><div class="metric-sub">requerem atenção</div></div>
-    <div class="metric"><div class="metric-label">Alta relevância</div><div class="metric-value">${{altas}}</div><div class="metric-sub">impacto direto no DP</div></div>
-    <div class="metric"><div class="metric-label">Exibindo</div><div class="metric-value">${{lista.length}}</div><div class="metric-sub">com filtros atuais</div></div>`;
-
-  const el = document.getElementById("lista");
-  el.innerHTML = lista.length
-    ? lista.map(cardHTML).join("")
-    : `<div class="empty">Nenhuma atualização encontrada com esses filtros.</div>`;
+  const lista=filtrar();
+  const lidas=getLidas();
+  const naoLidas=itens.filter(i=>!lidas.has(i.id)).length;
+  const altas=itens.filter(i=>i.relevancia==="Alta").length;
+  document.getElementById("metrics").innerHTML=`<div class="metric"><div class="metric-label">Total</div><div class="metric-value">${{itens.length}}</div><div class="metric-sub">no histórico</div></div><div class="metric danger"><div class="metric-label">Não lidas</div><div class="metric-value">${{naoLidas}}</div><div class="metric-sub">requerem atenção</div></div><div class="metric"><div class="metric-label">Alta relevância</div><div class="metric-value">${{altas}}</div><div class="metric-sub">impacto direto no DP</div></div><div class="metric"><div class="metric-label">Exibindo</div><div class="metric-value">${{lista.length}}</div><div class="metric-sub">com filtros atuais</div></div>`;
+  document.getElementById("lista").innerHTML=lista.length?lista.map(cardHTML).join(""):`<div class="empty">Nenhuma atualização encontrada.</div>`;
 }}
-
 async function analisarIA(id) {{
-  const item = itens.find(i => i.id === id);
-  if (!item) return;
-  const card = document.getElementById("card-" + id);
-  const btn = card.querySelector("button.btn-primary");
-  btn.innerHTML = `<span class="spinner"></span> Analisando...`;
-  btn.disabled = true;
-
+  const item=itens.find(i=>i.id===id); if(!item)return;
+  const btn=document.getElementById("card-"+id).querySelector("button.btn-primary");
+  btn.innerHTML=`<span class="spinner"></span> Analisando...`; btn.disabled=true;
   try {{
-    const res = await fetch("https://api.anthropic.com/v1/messages", {{
-      method: "POST",
-      headers: {{ "Content-Type": "application/json" }},
-      body: JSON.stringify({{
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 600,
-        system: `Você é especialista em DP brasileiro. Responda SOMENTE com JSON válido, sem markdown:
-{{"resumo":"...","impacto_dp":"...","acao_necessaria":"...","prazo":"...","risco_inacao":"...","processos_afetados":[]}}`,
-        messages: [{{ role: "user", content: `Fonte: ${{item.fonte}}\\nTítulo: ${{item.titulo}}\\nURL: ${{item.url}}` }}]
-      }})
-    }});
-    const data = await res.json();
-    const text = (data.content||[]).map(c=>c.text||"").join("").replace(/```json|```/g,"").trim();
-    item.analise_ia = JSON.parse(text);
+    const res=await fetch("https://api.anthropic.com/v1/messages",{{method:"POST",headers:{{"Content-Type":"application/json"}},body:JSON.stringify({{model:"claude-haiku-4-5-20251001",max_tokens:600,system:`Especialista em DP brasileiro. Responda SOMENTE com JSON válido sem markdown:\n{{"resumo":"...","impacto_dp":"...","acao_necessaria":"...","prazo":"...","risco_inacao":"...","processos_afetados":[]}}`,messages:[{{role:"user",content:`Fonte: ${{item.fonte}}\\nTítulo: ${{item.titulo}}\\nResumo: ${{item.resumo||""}}\\nURL: ${{item.url}}`}}]}})}});
+    const data=await res.json();
+    item.analise_ia=JSON.parse((data.content||[]).map(c=>c.text||"").join("").replace(/```json|```/g,"").trim());
     renderizar();
-  }} catch(e) {{
-    btn.innerHTML = "Erro — tente novamente";
-    btn.disabled = false;
-  }}
+  }} catch(e){{btn.innerHTML="Erro — tente novamente";btn.disabled=false;}}
 }}
-
 function exportarExcel() {{
-  const ws_data = [
-    ["Título","Fonte","Data","Relevância","Lida","URL","Impacto DP","Ação","Prazo"],
-    ...itens.map(i => [
-      i.titulo, i.fonte, i.data_str, i.relevancia,
-      getLidas().has(i.id) ? "Sim" : "Não", i.url,
-      i.analise_ia?.impacto_dp || "",
-      i.analise_ia?.acao_necessaria || "",
-      i.analise_ia?.prazo || "",
-    ])
-  ];
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(ws_data);
-  ws["!cols"] = [{{wch:60}},{{wch:25}},{{wch:12}},{{wch:10}},{{wch:6}},{{wch:60}},{{wch:40}},{{wch:40}},{{wch:20}}];
-  XLSX.utils.book_append_sheet(wb, ws, "Atualizações");
-  XLSX.writeFile(wb, "monitor_legislativo_dp.xlsx");
+  const ws_data=[["Título","Fonte","Data","Relevância","Resumo","Lida","URL","Impacto DP","Ação","Prazo"],...itens.map(i=>[i.titulo,i.fonte,i.data_str,i.relevancia,i.resumo||"",getLidas().has(i.id)?"Sim":"Não",i.url,i.analise_ia?.impacto_dp||"",i.analise_ia?.acao_necessaria||"",i.analise_ia?.prazo||""])];
+  const wb=XLSX.utils.book_new(); const ws=XLSX.utils.aoa_to_sheet(ws_data);
+  ws["!cols"]=[{{wch:55}},{{wch:22}},{{wch:12}},{{wch:10}},{{wch:50}},{{wch:6}},{{wch:50}},{{wch:40}},{{wch:40}},{{wch:20}}];
+  XLSX.utils.book_append_sheet(wb,ws,"Atualizações"); XLSX.writeFile(wb,"monitor_legislativo_dp.xlsx");
 }}
-
 function exportarPDF() {{
-  const modal = document.getElementById("modalPDF");
-  const lidas = getLidas();
-  const linhas = itens.map(i => `
-    <tr style="border-bottom:1px solid #eee">
-      <td style="padding:8px 6px;font-size:12px">${{i.data_str}}</td>
-      <td style="padding:8px 6px;font-size:11px;color:#1D4ED8">${{i.fonte}}</td>
-      <td style="padding:8px 6px;font-size:12px">${{i.titulo}}</td>
-      <td style="padding:8px 6px;font-size:12px;color:${{i.relevancia==="Alta"?"#DC2626":i.relevancia==="Média"?"#D97706":"#6B7280"}}">${{i.relevancia}}</td>
-      <td style="padding:8px 6px;font-size:12px">${{i.analise_ia?.acao_necessaria||"—"}}</td>
-    </tr>`).join("");
-  document.getElementById("pdf-content").innerHTML = `
-    <h3 style="margin-bottom:12px">Relatório — Monitor Legislativo DP</h3>
-    <p style="font-size:12px;color:#666;margin-bottom:12px">Gerado em: ${{new Date().toLocaleDateString("pt-BR")}}</p>
-    <table style="width:100%;border-collapse:collapse;font-family:sans-serif">
-      <thead><tr style="background:#1E3A5F;color:#fff">
-        <th style="padding:8px 6px;font-size:12px;text-align:left">Data</th>
-        <th style="padding:8px 6px;font-size:12px;text-align:left">Fonte</th>
-        <th style="padding:8px 6px;font-size:12px;text-align:left">Título</th>
-        <th style="padding:8px 6px;font-size:12px;text-align:left">Relevância</th>
-        <th style="padding:8px 6px;font-size:12px;text-align:left">Ação sugerida</th>
-      </tr></thead>
-      <tbody>${{linhas}}</tbody>
-    </table>`;
-  modal.classList.add("open");
+  const linhas=itens.map(i=>`<tr style="border-bottom:1px solid #eee"><td style="padding:8px 6px;font-size:11px">${{i.data_str}}</td><td style="padding:8px 6px;font-size:11px;color:#1D4ED8">${{i.fonte}}</td><td style="padding:8px 6px;font-size:11px"><strong>${{i.titulo}}</strong>${{i.resumo?`<br><span style="color:#64748B;font-size:10px">${{i.resumo.substring(0,120)}}...</span>`:""}}</td><td style="padding:8px 6px;font-size:11px;color:${{i.relevancia==="Alta"?"#DC2626":i.relevancia==="Média"?"#D97706":"#6B7280"}}">${{i.relevancia}}</td><td style="padding:8px 6px;font-size:11px">${{i.analise_ia?.acao_necessaria||"—"}}</td></tr>`).join("");
+  document.getElementById("pdf-content").innerHTML=`<h3 style="margin-bottom:8px">Relatório — Monitor Legislativo DP</h3><p style="font-size:12px;color:#666;margin-bottom:12px">Gerado em: ${{new Date().toLocaleDateString("pt-BR")}}</p><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#1E3A5F;color:#fff"><th style="padding:8px 6px;font-size:11px;text-align:left">Data</th><th style="padding:8px 6px;font-size:11px;text-align:left">Fonte</th><th style="padding:8px 6px;font-size:11px;text-align:left">Título/Resumo</th><th style="padding:8px 6px;font-size:11px;text-align:left">Relevância</th><th style="padding:8px 6px;font-size:11px;text-align:left">Ação</th></tr></thead><tbody>${{linhas}}</tbody></table>`;
+  document.getElementById("modalPDF").classList.add("open");
 }}
-function fecharModal() {{ document.getElementById("modalPDF").classList.remove("open"); }}
-
-document.getElementById("ultima").textContent = "{ultima}";
+function fecharModal(){{document.getElementById("modalPDF").classList.remove("open");}}
+document.getElementById("ultima").textContent="{ultima}";
 renderizar();
 </script>
 </body>
@@ -442,7 +233,7 @@ renderizar();
     OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(OUT_FILE, "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"Painel gerado: {OUT_FILE}  ({OUT_FILE.stat().st_size // 1024}KB)")
+    print(f"Painel gerado: {{OUT_FILE}}  ({{OUT_FILE.stat().st_size // 1024}}KB)")
 
 if __name__ == "__main__":
     gerar()
