@@ -16,6 +16,7 @@ PALAVRAS_ALTA = [
     "holerite", "pis", "pasep", "rais", "caged", "aviso prévio",
     "horas extras", "adicional", "insalubridade", "periculosidade",
 ]
+
 PALAVRAS_MEDIA = [
     "trabalhista", "empregado", "empregador", "contrato de trabalho",
     "benefício", "afastamento", "licença", "nr-", "norma regulamentadora",
@@ -79,8 +80,9 @@ def calcular_relevancia(texto):
     return "Baixa"
 
 
-def gerar_id(titulo, fonte):
-    return hashlib.md5(f"{fonte}{titulo}".encode()).hexdigest()[:12]
+def gerar_id(titulo, fonte, url):
+    base = f"{fonte}|{titulo}|{url}"
+    return hashlib.md5(base.encode("utf-8")).hexdigest()[:12]
 
 
 def carregar_existentes():
@@ -96,7 +98,11 @@ def salvar(atualizacoes):
     payload = {
         "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M"),
         "total": len(atualizacoes),
-        "atualizacoes": sorted(atualizacoes, key=lambda x: x["data_iso"], reverse=True),
+        "atualizacoes": sorted(
+            atualizacoes,
+            key=lambda x: x.get("data_iso", ""),
+            reverse=True
+        ),
     }
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
@@ -108,6 +114,7 @@ def buscar_resumo_na_pagina(url):
         r = requests.get(url, headers=HEADERS, timeout=10)
         r.raise_for_status()
         soup = BeautifulSoup(r.text, "html.parser")
+
         for seletor in [
             ".field--name-body p",
             ".documentDescription",
@@ -120,30 +127,27 @@ def buscar_resumo_na_pagina(url):
                 texto = el.get_text(strip=True)
                 if len(texto) > 40:
                     return texto[:300] + ("..." if len(texto) > 300 else "")
+
         for p in soup.find_all("p"):
             texto = p.get_text(strip=True)
             if len(texto) > 60:
                 return texto[:300] + ("..." if len(texto) > 300 else "")
+
     except Exception as e:
         log.debug(f"Resumo não obtido de {url}: {e}")
+
     return ""
 
 
 def coletar_govbr(soup, base_url, url_listagem):
-    """
-    Extrai notícias do portal gov.br usando data-base-url
-    que contém a URL exata de cada notícia.
-    """
     resultados = []
     vistos = set()
 
-    # Método 1: data-base-url no body (URL da notícia atual visível)
     for el in soup.find_all(attrs={"data-base-url": True}):
         url_noticia = el.get("data-base-url", "").strip()
         if not url_noticia or url_noticia == url_listagem:
             continue
 
-        # Busca título dentro do elemento
         titulo_el = el.select_one("h1, h2, h3, .documentFirstHeading")
         titulo = titulo_el.get_text(strip=True) if titulo_el else ""
 
@@ -159,27 +163,24 @@ def coletar_govbr(soup, base_url, url_listagem):
                 "data_str": "",
             })
 
-    # Método 2: links diretos com padrão de URL de notícia
     for a in soup.find_all("a", href=True):
         href = a["href"].strip()
         titulo = a.get_text(strip=True)
 
-        # Normaliza URL
         if href.startswith("/"):
             href = base_url.rstrip("/") + href
         elif not href.startswith("http"):
             continue
 
-        # Filtra: deve ser URL de notícia do mesmo domínio
-        if (len(titulo) > 20
-                and href not in vistos
-                and href != url_listagem
-                and base_url in href
-                and any(p in href for p in ["/noticias/", "/noticia/", "/assuntos/"])):
-
+        if (
+            len(titulo) > 20
+            and href not in vistos
+            and href != url_listagem
+            and base_url in href
+            and any(p in href for p in ["/noticias/", "/noticia/", "/assuntos/"])
+        ):
             vistos.add(href)
 
-            # Tenta pegar resumo do elemento pai
             pai = a.find_parent(["article", "li", "div"])
             resumo = ""
             if pai:
@@ -201,7 +202,6 @@ def coletar_govbr(soup, base_url, url_listagem):
 
 
 def coletar_tst(soup, base_url, url_listagem):
-    """Extrai notícias do TST."""
     resultados = []
     vistos = set()
 
@@ -214,12 +214,12 @@ def coletar_tst(soup, base_url, url_listagem):
         elif not href.startswith("http"):
             continue
 
-        if (len(titulo) > 20
-                and href not in vistos
-                and href != url_listagem
-                and base_url in href
-                and href != url_listagem):
-
+        if (
+            len(titulo) > 20
+            and href not in vistos
+            and href != url_listagem
+            and base_url in href
+        ):
             vistos.add(href)
             resultados.append({
                 "titulo": titulo,
@@ -253,12 +253,13 @@ def coletar_fonte(fonte):
 
 def filtrar_e_enriquecer(itens, fonte, existentes):
     novos = []
+
     for item in itens:
         relevancia = calcular_relevancia(item["titulo"])
         if relevancia == "Baixa":
             continue
 
-        uid = gerar_id(item["titulo"], fonte["nome"])
+        uid = gerar_id(item["titulo"], fonte["nome"], item["url"])
         if uid in existentes:
             continue
 
@@ -271,10 +272,13 @@ def filtrar_e_enriquecer(itens, fonte, existentes):
         novos.append({
             "id": uid,
             "fonte": fonte["nome"],
+            "fonte_nome": fonte["nome"],
             "sigla": fonte["sigla"],
             "titulo": item["titulo"],
             "resumo": resumo,
             "url": item["url"],
+            "link_noticia": item["url"],
+            "fonte_url": item["url"],
             "data_str": item.get("data_str") or datetime.now().strftime("%d/%m/%Y"),
             "data_iso": datetime.now().strftime("%Y-%m-%d"),
             "relevancia": relevancia,
