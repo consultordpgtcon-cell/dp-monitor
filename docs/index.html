@@ -166,7 +166,7 @@ function cardHTML(item) {
   }
   return `<div class="item ${lida?"":"unread"}" id="card-${item.id}">
     <div class="item-header"><div class="item-title"><a href="${item.url}" target="_blank">${item.titulo}</a></div><span class="badge ${relBadge(item.relevancia)}">${item.relevancia}</span></div>
-    <div class="item-meta"><span class="badge ${siglaBadge(item.sigla)}">${item.fonte}</span><span>${item.data_str}</span>${lida?'<span style="color:#16A34A;font-size:12px">✓ lida</span>':'<span style="color:#D97706;font-size:12px">● nova</span>'}</div>
+    <div class="item-meta"><a href="${item.url}" target="_blank" class="badge ${siglaBadge(item.sigla)}" style="text-decoration:none">${item.fonte}</a><span>${item.data_str}</span>${lida?'<span style="color:#16A34A;font-size:12px">✓ lida</span>':'<span style="color:#D97706;font-size:12px">● nova</span>'}</div>
     ${resumoHTML}${aiHTML}
     <div class="item-actions">${!item.analise_ia?`<button class="btn btn-primary" onclick="analisarIA('${item.id}')">Analisar com IA</button>`:""}${!lida?`<button class="btn" onclick="marcarLida('${item.id}')">Marcar como lida</button>`:""}<a href="${item.url}" target="_blank" class="btn">Ver fonte</a></div>
   </div>`;
