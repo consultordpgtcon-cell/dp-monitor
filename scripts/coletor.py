@@ -29,30 +29,35 @@ FONTES = [
         "sigla": "RF",
         "url": "https://www.gov.br/receitafederal/pt-br/assuntos/noticias",
         "base_url": "https://www.gov.br",
+        "tipo": "govbr",
     },
     {
         "nome": "Min. do Trabalho e Emprego",
         "sigla": "MTE",
         "url": "https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/noticias",
         "base_url": "https://www.gov.br",
+        "tipo": "govbr",
     },
     {
         "nome": "eSocial",
         "sigla": "ES",
         "url": "https://www.gov.br/esocial/pt-br/noticias",
         "base_url": "https://www.gov.br",
+        "tipo": "govbr",
     },
     {
         "nome": "TST",
         "sigla": "TST",
         "url": "https://www.tst.jus.br/web/guest/noticias",
         "base_url": "https://www.tst.jus.br",
+        "tipo": "tst",
     },
     {
         "nome": "Portal eSocial",
         "sigla": "PES",
         "url": "https://esocial.fazenda.gov.br/",
         "base_url": "https://esocial.fazenda.gov.br",
+        "tipo": "govbr",
     },
 ]
 
@@ -98,92 +103,6 @@ def salvar(atualizacoes):
     log.info(f"Salvo: {len(atualizacoes)} itens")
 
 
-def normalizar_url(href, base_url):
-    if not href:
-        return ""
-    href = href.strip().split("?")[0]  # remove parâmetros desnecessários
-    if href.startswith("http://") or href.startswith("https://"):
-        return href
-    if href.startswith("//"):
-        return "https:" + href
-    if href.startswith("/"):
-        return base_url.rstrip("/") + href
-    return ""
-
-
-def extrair_links_govbr(soup, base_url, url_listagem):
-    """Extrai links específicos do portal gov.br (sistema Plone)."""
-    resultados = []
-
-    # Seletores específicos do Plone/gov.br
-    seletores = [
-        "h2.tileHeadline a",
-        "h2 a",
-        "h3 a",
-        ".tileHeadline a",
-        "article h2 a",
-        "article h3 a",
-        ".summary a",
-        ".item-title a",
-        "a.summary",
-    ]
-
-    links_encontrados = set()
-    for seletor in seletores:
-        for link in soup.select(seletor):
-            href = link.get("href", "")
-            titulo = link.get_text(strip=True)
-            url = normalizar_url(href, base_url)
-
-            # Valida: URL deve ser diferente da listagem e ter título longo
-            if (url and url != url_listagem and len(titulo) > 15
-                    and url not in links_encontrados
-                    and base_url in url):
-                links_encontrados.add(url)
-                # Tenta pegar resumo do elemento pai
-                pai = link.find_parent(["article", "div", "li"])
-                resumo = ""
-                if pai:
-                    desc = pai.select_one(".description, .tileBody, p")
-                    if desc:
-                        t = desc.get_text(strip=True)
-                        if len(t) > 40 and t != titulo:
-                            resumo = t[:300]
-                resultados.append({
-                    "titulo": titulo,
-                    "url": url,
-                    "resumo": resumo,
-                    "data_str": "",
-                })
-
-    return resultados[:15]
-
-
-def extrair_links_tst(soup, base_url, url_listagem):
-    """Extrai links específicos do TST."""
-    resultados = []
-    links_encontrados = set()
-
-    for link in soup.select("a[href]"):
-        href = link.get("href", "")
-        titulo = link.get_text(strip=True)
-        url = normalizar_url(href, base_url)
-
-        if (url and url != url_listagem and len(titulo) > 20
-                and url not in links_encontrados
-                and ("noticias" in url or "noticia" in url or "web/guest" in url)
-                and url != url_listagem):
-            links_encontrados.add(url)
-            resultados.append({
-                "titulo": titulo,
-                "url": url,
-                "resumo": "",
-                "data_str": "",
-            })
-
-    return resultados[:15]
-
-
 def buscar_resumo_na_pagina(url):
     try:
         r = requests.get(url, headers=HEADERS, timeout=10)
@@ -191,10 +110,8 @@ def buscar_resumo_na_pagina(url):
         soup = BeautifulSoup(r.text, "html.parser")
         for seletor in [
             ".field--name-body p",
-            ".noticia-texto p",
-            ".content-core p",
             ".documentDescription",
-            ".description",
+            ".content-core p",
             "article p",
             "main p",
         ]:
@@ -212,6 +129,108 @@ def buscar_resumo_na_pagina(url):
     return ""
 
 
+def coletar_govbr(soup, base_url, url_listagem):
+    """
+    Extrai notícias do portal gov.br usando data-base-url
+    que contém a URL exata de cada notícia.
+    """
+    resultados = []
+    vistos = set()
+
+    # Método 1: data-base-url no body (URL da notícia atual visível)
+    for el in soup.find_all(attrs={"data-base-url": True}):
+        url_noticia = el.get("data-base-url", "").strip()
+        if not url_noticia or url_noticia == url_listagem:
+            continue
+
+        # Busca título dentro do elemento
+        titulo_el = el.select_one("h1, h2, h3, .documentFirstHeading")
+        titulo = titulo_el.get_text(strip=True) if titulo_el else ""
+
+        if not titulo:
+            titulo = el.get_text(strip=True)[:100]
+
+        if len(titulo) > 15 and url_noticia not in vistos:
+            vistos.add(url_noticia)
+            resultados.append({
+                "titulo": titulo,
+                "url": url_noticia,
+                "resumo": "",
+                "data_str": "",
+            })
+
+    # Método 2: links diretos com padrão de URL de notícia
+    for a in soup.find_all("a", href=True):
+        href = a["href"].strip()
+        titulo = a.get_text(strip=True)
+
+        # Normaliza URL
+        if href.startswith("/"):
+            href = base_url.rstrip("/") + href
+        elif not href.startswith("http"):
+            continue
+
+        # Filtra: deve ser URL de notícia do mesmo domínio
+        if (len(titulo) > 20
+                and href not in vistos
+                and href != url_listagem
+                and base_url in href
+                and any(p in href for p in ["/noticias/", "/noticia/", "/assuntos/"])):
+
+            vistos.add(href)
+
+            # Tenta pegar resumo do elemento pai
+            pai = a.find_parent(["article", "li", "div"])
+            resumo = ""
+            if pai:
+                desc = pai.select_one(".description, .tileBody, p, .resumo")
+                if desc:
+                    t = desc.get_text(strip=True)
+                    if len(t) > 40 and t != titulo:
+                        resumo = t[:300]
+
+            resultados.append({
+                "titulo": titulo,
+                "url": href,
+                "resumo": resumo,
+                "data_str": "",
+            })
+
+    log.info(f"  Método govbr: {len(resultados)} links encontrados")
+    return resultados[:15]
+
+
+def coletar_tst(soup, base_url, url_listagem):
+    """Extrai notícias do TST."""
+    resultados = []
+    vistos = set()
+
+    for a in soup.find_all("a", href=True):
+        href = a["href"].strip()
+        titulo = a.get_text(strip=True)
+
+        if href.startswith("/"):
+            href = base_url.rstrip("/") + href
+        elif not href.startswith("http"):
+            continue
+
+        if (len(titulo) > 20
+                and href not in vistos
+                and href != url_listagem
+                and base_url in href
+                and href != url_listagem):
+
+            vistos.add(href)
+            resultados.append({
+                "titulo": titulo,
+                "url": href,
+                "resumo": "",
+                "data_str": "",
+            })
+
+    return resultados[:15]
+
+
 def coletar_fonte(fonte):
     log.info(f"Coletando: {fonte['nome']} ...")
     try:
@@ -223,12 +242,12 @@ def coletar_fonte(fonte):
 
     soup = BeautifulSoup(r.text, "html.parser")
 
-    if fonte["sigla"] == "TST":
-        itens = extrair_links_tst(soup, fonte["base_url"], fonte["url"])
+    if fonte["tipo"] == "tst":
+        itens = coletar_tst(soup, fonte["base_url"], fonte["url"])
     else:
-        itens = extrair_links_govbr(soup, fonte["base_url"], fonte["url"])
+        itens = coletar_govbr(soup, fonte["base_url"], fonte["url"])
 
-    log.info(f"  {len(itens)} itens encontrados")
+    log.info(f"  {len(itens)} itens após extração")
     return itens
 
 
@@ -263,7 +282,7 @@ def filtrar_e_enriquecer(itens, fonte, existentes):
             "analise_ia": None,
         })
 
-    log.info(f"  {len(novos)} itens NOVOS após filtro")
+    log.info(f"  {len(novos)} itens NOVOS")
     return novos
 
 
