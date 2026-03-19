@@ -1,0 +1,67 @@
+name: Monitor Legislativo — Coleta Diária
+
+on:
+  schedule:
+    # Todo dia útil às 06h00 horário de Brasília (09h00 UTC)
+    - cron: '0 9 * * 1-5'
+    # Segunda coleta às 18h00 BRT (21h00 UTC)
+    - cron: '0 21 * * 1-5'
+
+  # Permite rodar manualmente pelo painel do GitHub
+  workflow_dispatch:
+    inputs:
+      forcar_analise_ia:
+        description: 'Forçar análise IA em todos os itens sem análise?'
+        required: false
+        default: 'false'
+
+jobs:
+  coletar-e-publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      contents: write   # necessário para fazer push do data/ e docs/
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # histórico completo
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Executar coleta e análise
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          EMAIL_REMETENTE: ${{ secrets.EMAIL_REMETENTE }}
+          EMAIL_SENHA_APP: ${{ secrets.EMAIL_SENHA_APP }}
+          EMAIL_DESTINATARIOS: ${{ secrets.EMAIL_DESTINATARIOS }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python main.py
+
+      - name: Gerar painel (index.html)
+        run: python scripts/gerar_painel.py
+
+      - name: Commitar dados e painel atualizados
+        run: |
+          git config user.name  "Monitor DP Bot"
+          git config user.email "monitor-dp@github-actions"
+          git add data/ docs/
+          git diff --cached --quiet || git commit -m "chore: atualização automática $(date '+%d/%m/%Y %H:%M')"
+          git push
+
+      - name: Salvar logs como artefato
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ github.run_id }}
+          path: data/log_execucao.txt
+          retention-days: 30

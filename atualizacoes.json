@@ -1,0 +1,63 @@
+{
+  "ultima_atualizacao": "19/03/2026 06:00",
+  "total": 3,
+  "atualizacoes": [
+    {
+      "id": "exemplo001",
+      "fonte": "Receita Federal",
+      "sigla": "RF",
+      "titulo": "IN RFB 2.219/2026 — Novas regras para entrega da DIRF 2026",
+      "url": "https://www.gov.br/receitafederal",
+      "data_str": "19/03/2026",
+      "data_iso": "2026-03-19",
+      "relevancia": "Alta",
+      "lida": false,
+      "analise_ia": {
+        "resumo": "Instrução Normativa altera prazo e formato de entrega da DIRF 2026.",
+        "impacto_dp": "Exige adaptação dos sistemas de folha de pagamento para novo leiaute.",
+        "acao_necessaria": "Contatar fornecedor do sistema de folha e verificar atualização do leiaute.",
+        "prazo": "30/04/2026",
+        "risco_inacao": "Multa de R$200 por informação incorreta ou entrega em atraso.",
+        "processos_afetados": ["DIRF", "Folha de Pagamento", "Obrigações Acessórias"]
+      }
+    },
+    {
+      "id": "exemplo002",
+      "fonte": "Min. do Trabalho e Emprego",
+      "sigla": "MTE",
+      "titulo": "Portaria MTE 3.741 — Atualização do salário mínimo regional",
+      "url": "https://www.gov.br/trabalho-e-emprego",
+      "data_str": "17/03/2026",
+      "data_iso": "2026-03-17",
+      "relevancia": "Alta",
+      "lida": false,
+      "analise_ia": {
+        "resumo": "Portaria estabelece novos valores de salário mínimo para 6 estados, vigência 01/04/2026.",
+        "impacto_dp": "Impacta cálculos de FGTS, INSS e benefícios proporcionais em 6 estados.",
+        "acao_necessaria": "Atualizar tabela de salários no sistema de folha antes de 01/04/2026.",
+        "prazo": "01/04/2026",
+        "risco_inacao": "Pagamentos abaixo do mínimo regional geram passivo trabalhista.",
+        "processos_afetados": ["Folha de Pagamento", "FGTS", "INSS", "Admissão"]
+      }
+    },
+    {
+      "id": "exemplo003",
+      "fonte": "eSocial",
+      "sigla": "ES",
+      "titulo": "eSocial — Nota Técnica: obrigatoriedade do evento S-2400 ampliada",
+      "url": "https://www.gov.br/esocial",
+      "data_str": "15/03/2026",
+      "data_iso": "2026-03-15",
+      "relevancia": "Alta",
+      "lida": false,
+      "analise_ia": {
+        "resumo": "A partir de julho/2026 todas as empresas do grupo 2 devem transmitir S-2400.",
+        "impacto_dp": "Necessita cadastramento de todos os benefícios previdenciários no eSocial.",
+        "acao_necessaria": "Levantar todos os benefícios previdenciários ativos e cadastrar no eSocial.",
+        "prazo": "01/07/2026",
+        "risco_inacao": "Inconsistências no eSocial bloqueiam emissão de CND previdenciária.",
+        "processos_afetados": ["eSocial", "Benefícios", "Previdência Social"]
+      }
+    }
+  ]
+}
