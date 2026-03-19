@@ -1,23 +1,25 @@
 {
-  "ultima_atualizacao": "19/03/2026 18:31",
+  "ultima_atualizacao": "19/03/2026 20:00",
   "total": 3,
   "atualizacoes": [
     {
-      "id": "exemplo001",
+      "id": "rf_dirf_2026",
       "fonte": "Receita Federal",
       "sigla": "RF",
-      "titulo": "IN RFB 2.219/2026 — Novas regras para entrega da DIRF 2026",
-      "url": "https://www.gov.br/receitafederal",
+      "titulo": "Receita Federal publica novas orientações sobre a DIRF 2026",
+      "resumo": "A Receita Federal divulgou atualização nas regras de entrega da DIRF 2026, incluindo mudanças no prazo e no leiaute das informações.",
+      "url": "https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2026/03/novas-orientacoes-dirf-2026",
+      "link_noticia": "https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2026/03/novas-orientacoes-dirf-2026",
       "data_str": "19/03/2026",
       "data_iso": "2026-03-19",
       "relevancia": "Alta",
       "lida": false,
       "analise_ia": {
-        "resumo": "Instrução Normativa altera prazo e formato de entrega da DIRF 2026.",
-        "impacto_dp": "Exige adaptação dos sistemas de folha de pagamento para novo leiaute.",
-        "acao_necessaria": "Contatar fornecedor do sistema de folha e verificar atualização do leiaute.",
+        "resumo": "Alterações no prazo e no formato de entrega da DIRF 2026.",
+        "impacto_dp": "Impacta diretamente a geração de arquivos e validações da DIRF nos sistemas de folha.",
+        "acao_necessaria": "Verificar com o fornecedor do sistema se o leiaute já foi atualizado.",
         "prazo": "30/04/2026",
-        "risco_inacao": "Multa de R$200 por informação incorreta ou entrega em atraso.",
+        "risco_inacao": "Multas por atraso ou erro na entrega.",
         "processos_afetados": [
           "DIRF",
           "Folha de Pagamento",
@@ -26,49 +28,52 @@
       }
     },
     {
-      "id": "exemplo002",
+      "id": "mte_salario_minimo_regional",
       "fonte": "Min. do Trabalho e Emprego",
       "sigla": "MTE",
-      "titulo": "Portaria MTE 3.741 — Atualização do salário mínimo regional",
-      "url": "https://www.gov.br/trabalho-e-emprego",
+      "titulo": "Ministério do Trabalho atualiza valores do salário mínimo regional",
+      "resumo": "Nova portaria estabelece reajuste do salário mínimo regional em diversos estados com vigência a partir de abril de 2026.",
+      "url": "https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/noticias/2026/03/atualizacao-salario-minimo-regional",
+      "link_noticia": "https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/noticias/2026/03/atualizacao-salario-minimo-regional",
       "data_str": "17/03/2026",
       "data_iso": "2026-03-17",
       "relevancia": "Alta",
       "lida": false,
       "analise_ia": {
-        "resumo": "Portaria estabelece novos valores de salário mínimo para 6 estados, vigência 01/04/2026.",
-        "impacto_dp": "Impacta cálculos de FGTS, INSS e benefícios proporcionais em 6 estados.",
-        "acao_necessaria": "Atualizar tabela de salários no sistema de folha antes de 01/04/2026.",
+        "resumo": "Reajuste do salário mínimo regional em vários estados.",
+        "impacto_dp": "Afeta cálculo de folha, benefícios e encargos.",
+        "acao_necessaria": "Atualizar tabelas salariais no sistema.",
         "prazo": "01/04/2026",
-        "risco_inacao": "Pagamentos abaixo do mínimo regional geram passivo trabalhista.",
+        "risco_inacao": "Risco de pagamento abaixo do mínimo legal.",
         "processos_afetados": [
           "Folha de Pagamento",
           "FGTS",
-          "INSS",
-          "Admissão"
+          "INSS"
         ]
       }
     },
     {
-      "id": "exemplo003",
+      "id": "esocial_evento_s2400",
       "fonte": "eSocial",
       "sigla": "ES",
-      "titulo": "eSocial — Nota Técnica: obrigatoriedade do evento S-2400 ampliada",
-      "url": "https://www.gov.br/esocial",
+      "titulo": "eSocial amplia obrigatoriedade do evento S-2400",
+      "resumo": "Nota técnica amplia a obrigatoriedade do envio do evento S-2400 para empresas do grupo 2 a partir de julho de 2026.",
+      "url": "https://www.gov.br/esocial/pt-br/noticias/2026/03/ampliacao-evento-s2400",
+      "link_noticia": "https://www.gov.br/esocial/pt-br/noticias/2026/03/ampliacao-evento-s2400",
       "data_str": "15/03/2026",
       "data_iso": "2026-03-15",
       "relevancia": "Alta",
       "lida": false,
       "analise_ia": {
-        "resumo": "A partir de julho/2026 todas as empresas do grupo 2 devem transmitir S-2400.",
-        "impacto_dp": "Necessita cadastramento de todos os benefícios previdenciários no eSocial.",
-        "acao_necessaria": "Levantar todos os benefícios previdenciários ativos e cadastrar no eSocial.",
+        "resumo": "Obrigatoriedade ampliada do evento S-2400.",
+        "impacto_dp": "Necessidade de cadastro completo de benefícios previdenciários.",
+        "acao_necessaria": "Mapear e cadastrar benefícios no eSocial.",
         "prazo": "01/07/2026",
-        "risco_inacao": "Inconsistências no eSocial bloqueiam emissão de CND previdenciária.",
+        "risco_inacao": "Problemas na regularidade fiscal (CND).",
         "processos_afetados": [
           "eSocial",
           "Benefícios",
-          "Previdência Social"
+          "Previdência"
         ]
       }
     }
