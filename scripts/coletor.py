@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """
 Monitor Legislativo — Coletor de Atualizações
-Coleta notícias da Receita Federal, MTE, eSocial, TST e Portal eSocial
 """
 
-import os, json, hashlib, logging, time
+import json, hashlib, logging, time
 from datetime import datetime
 from pathlib import Path
 
@@ -36,40 +35,30 @@ FONTES = [
         "sigla": "RF",
         "url": "https://www.gov.br/receitafederal/pt-br/assuntos/noticias",
         "base_url": "https://www.gov.br",
-        "seletor_itens": "article, .tileItem",
-        "seletor_resumo": ".description, .tileBody p, article p",
     },
     {
         "nome": "Min. do Trabalho e Emprego",
         "sigla": "MTE",
         "url": "https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/noticias",
         "base_url": "https://www.gov.br",
-        "seletor_itens": "article, .tileItem",
-        "seletor_resumo": ".description, .tileBody p, article p",
     },
     {
         "nome": "eSocial",
         "sigla": "ES",
         "url": "https://www.gov.br/esocial/pt-br/noticias",
         "base_url": "https://www.gov.br",
-        "seletor_itens": "article, .tileItem",
-        "seletor_resumo": ".description, .tileBody p, article p",
     },
     {
         "nome": "TST",
         "sigla": "TST",
         "url": "https://www.tst.jus.br/web/guest/noticias",
         "base_url": "https://www.tst.jus.br",
-        "seletor_itens": ".portlet-body article, .noticias-item, li.item",
-        "seletor_resumo": ".portlet-body p, .resumo, .summary",
     },
     {
         "nome": "Portal eSocial",
         "sigla": "PES",
         "url": "https://esocial.fazenda.gov.br/",
         "base_url": "https://esocial.fazenda.gov.br",
-        "seletor_itens": ".noticia, article, .item-noticia",
-        "seletor_resumo": ".resumo, .descricao, p",
     },
 ]
 
@@ -114,17 +103,30 @@ def salvar(atualizacoes: list):
     }
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
-    log.info(f"Salvo: {len(atualizacoes)} itens em {DATA_FILE}")
+    log.info(f"Salvo: {len(atualizacoes)} itens")
 
 
-def buscar_resumo_na_pagina(url: str, fonte: dict) -> str:
-    """Acessa a página da notícia e extrai o primeiro parágrafo como resumo."""
+def normalizar_url(href: str, base_url: str) -> str:
+    """Garante que a URL seja absoluta e válida."""
+    if not href:
+        return ""
+    href = href.strip()
+    if href.startswith("http://") or href.startswith("https://"):
+        return href
+    if href.startswith("//"):
+        return "https:" + href
+    if href.startswith("/"):
+        return base_url.rstrip("/") + href
+    return base_url.rstrip("/") + "/" + href
+
+
+def buscar_resumo_na_pagina(url: str) -> str:
+    """Acessa a página da notícia e extrai o primeiro parágrafo."""
     try:
         r = requests.get(url, headers=HEADERS, timeout=10)
         r.raise_for_status()
         soup = BeautifulSoup(r.text, "html.parser")
 
-        # Tenta seletores específicos primeiro
         for seletor in [
             ".field--name-body p",
             ".noticia-texto p",
@@ -139,10 +141,8 @@ def buscar_resumo_na_pagina(url: str, fonte: dict) -> str:
             if el:
                 texto = el.get_text(strip=True)
                 if len(texto) > 40:
-                    # Limita a 300 caracteres para o resumo
                     return texto[:300] + ("..." if len(texto) > 300 else "")
 
-        # Fallback: primeiro parágrafo com conteúdo relevante
         for p in soup.find_all("p"):
             texto = p.get_text(strip=True)
             if len(texto) > 60:
@@ -150,7 +150,6 @@ def buscar_resumo_na_pagina(url: str, fonte: dict) -> str:
 
     except Exception as e:
         log.debug(f"Não foi possível buscar resumo em {url}: {e}")
-
     return ""
 
 
@@ -166,23 +165,26 @@ def coletar_fonte(fonte: dict) -> list:
     soup = BeautifulSoup(r.text, "html.parser")
     itens = []
 
-    for el in soup.select("article, .item, .noticia, li.item, .tileItem")[:15]:
+    # Coleta todos os links com título relevante
+    for el in soup.select("article, .item, .noticia, li.item, .tileItem, .summary")[:20]:
         link = el.select_one("a[href]")
         if not link:
             continue
+
         titulo = link.get_text(strip=True)
         if len(titulo) < 15:
             continue
 
+        # URL ESPECÍFICA da notícia — normalizada
         href = link.get("href", "")
-        if href.startswith("/"):
-            href = fonte["base_url"] + href
-        if not href.startswith("http"):
+        url_noticia = normalizar_url(href, fonte["base_url"])
+
+        if not url_noticia or url_noticia == fonte["url"]:
             continue
 
         # Tenta pegar resumo direto na listagem
         resumo = ""
-        for sel in [".description", ".tileBody p", ".resumo", "p"]:
+        for sel in [".description", ".tileBody p", ".resumo", ".summary p", "p"]:
             rel = el.select_one(sel)
             if rel:
                 texto = rel.get_text(strip=True)
@@ -197,7 +199,7 @@ def coletar_fonte(fonte: dict) -> list:
 
         itens.append({
             "titulo": titulo,
-            "url": href,
+            "url": url_noticia,       # ← URL específica da notícia
             "data_str": data_str,
             "resumo_listagem": resumo,
         })
@@ -217,12 +219,11 @@ def filtrar_e_enriquecer(itens: list, fonte: dict, existentes: dict) -> list:
         if uid in existentes:
             continue
 
-        # Busca resumo na página da notícia se não veio na listagem
         resumo = item.get("resumo_listagem", "")
         if not resumo and relevancia == "Alta":
             log.info(f"  Buscando resumo: {item['titulo'][:50]}...")
-            resumo = buscar_resumo_na_pagina(item["url"], fonte)
-            time.sleep(1)  # gentileza com o servidor
+            resumo = buscar_resumo_na_pagina(item["url"])
+            time.sleep(1)
 
         novos.append({
             "id": uid,
@@ -230,7 +231,7 @@ def filtrar_e_enriquecer(itens: list, fonte: dict, existentes: dict) -> list:
             "sigla": fonte["sigla"],
             "titulo": item["titulo"],
             "resumo": resumo,
-            "url": item["url"],
+            "url": item["url"],           # ← URL específica salva corretamente
             "data_str": item["data_str"] or datetime.now().strftime("%d/%m/%Y"),
             "data_iso": datetime.now().strftime("%Y-%m-%d"),
             "relevancia": relevancia,
@@ -254,8 +255,7 @@ def coletar():
         existentes.update({n["id"]: n for n in novos})
         time.sleep(2)
 
-    todos = list(existentes.values())
-    salvar(todos)
+    salvar(list(existentes.values()))
     return todos_novos
 
 
